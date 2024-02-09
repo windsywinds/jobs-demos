@@ -1,0 +1,24 @@
+{
+  "name": "user-journeys-demo",
+  "version": "1.0.0",
+  "description": "Replay recorded user journeys of your website on Cloud Run jobs.",
+  "main": "runner.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GoogleCloudPlatform/jobs-demos.git"
+  },
+  "author": "Steren Giannini <steren@google.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/GoogleCloudPlatform/jobs-demos/issues"
+  },
+  "homepage": "https://github.com/GoogleCloudPlatform/jobs-demos/tree/main/user-journeys#readme",
+  "dependencies": {
+    "@puppeteer/replay": "^1.2.0",
+    "puppeteer": "^17.1.3"
+  },
+  "type": "module"
+}
