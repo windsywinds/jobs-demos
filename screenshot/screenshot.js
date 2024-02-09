@@ -13,9 +13,14 @@ async function takeScreenshot(browser, url) {
   await page.goto(url);
 
   console.log(`Taking a screenshot of ${url}`);
-  return await page.screenshot({
+  const screenshot = await page.screenshot({
     fullPage: true,
   });
+
+  // Extracting webpage title
+  const title = await page.$eval('meta[property="og:title"]', (element) => element.content);
+
+  return { screenshot, title };
 }
 
 async function createStorageBucketIfMissing(storage, bucketName) {
@@ -35,14 +40,20 @@ async function createStorageBucketIfMissing(storage, bucketName) {
   return createdBucket;
 }
 
-async function uploadImage(bucket, taskIndex, imageBuffer) {
+async function uploadData(bucket, taskIndex, screenshotData) {
   // Create filename using the current time and task index
   const date = new Date();
   date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
-  const filename = `${date.toISOString()}-task${taskIndex}.png`;
+  const filename = `${date.toISOString()}-task${taskIndex}`;
 
-  console.log(`Uploading screenshot as '${filename}'`);
-  await bucket.file(filename).save(imageBuffer);
+  // Upload screenshot
+  console.log(`Uploading screenshot as '${filename}.png'`);
+  await bucket.file(`${filename}.png`).save(screenshotData.screenshot);
+
+  // Create JSON object with title and upload
+  const jsonData = JSON.stringify({ title: screenshotData.title });
+  console.log(`Uploading data as '${filename}.json'`);
+  await bucket.file(`${filename}.json`).save(jsonData);
 }
 
 async function main(urls) {
@@ -65,7 +76,7 @@ async function main(urls) {
   }
 
   const browser = await initBrowser();
-  const imageBuffer = await takeScreenshot(browser, url).catch(async (err) => {
+  const screenshotData = await takeScreenshot(browser, url).catch(async (err) => {
     // Make sure to close the browser if we hit an error.
     await browser.close();
     throw err;
@@ -75,7 +86,7 @@ async function main(urls) {
   console.log("Initializing Cloud Storage client");
   const storage = new Storage();
   const bucket = await createStorageBucketIfMissing(storage, bucketName);
-  await uploadImage(bucket, taskIndex, imageBuffer);
+  await uploadData(bucket, taskIndex, screenshotData);
 
   console.log("Upload complete!");
 }
